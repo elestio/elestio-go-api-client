@@ -127,22 +127,11 @@ type (
 )
 
 func (h *ServiceHandler) GetTemplatesList() ([]*Template, error) {
-	type getTemplatesListRequest struct {
-		JWT string `json:"jwt"`
-	}
-
 	type getTemplatesListResponse struct {
 		Templates []Template `json:"instances"`
 	}
 
-	req := getTemplatesListRequest{
-		JWT: h.client.jwt,
-	}
-
-	bts, err := h.client.sendGetRequest(
-		fmt.Sprintf("%s/api/servers/getTemplates", h.client.BaseURL),
-		req,
-	)
+	bts, err := h.client.sendGetRequest(fmt.Sprintf("%s/api/servers/getTemplates", h.client.BaseURL), nil)
 	if err != nil {
 		return nil, err
 	}

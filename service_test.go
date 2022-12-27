@@ -23,12 +23,16 @@ func setupServiceTestCase(t *testing.T) *Client {
 
 func TestServiceHandler_GetTemplatesList(t *testing.T) {
 	t.Skip("Skipping test")
-	c := setupServiceTestCase(t)
+	c := NewUnsignedClient()
 
 	templates, err := c.Service.GetTemplatesList()
 	require.NoError(t, err, "expected no error when getting templates")
 	require.NotNil(t, templates, "expected non-nil templates")
 	require.NotEqual(t, 0, len(templates), "expected at least 1 template")
+	// for _, template := range templates {
+	// 	template := *template
+	// 	fmt.Fprintf(os.Stdout, "Template: %v", template)
+	// }
 }
 
 func TestServiceHandler_Get(t *testing.T) {

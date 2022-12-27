@@ -46,6 +46,17 @@ func NewClient(email, apiKey string) (*Client, error) {
 	return &client, nil
 }
 
+func NewUnsignedClient() *Client {
+	client := Client{
+		BaseURL:    BaseURLV1,
+		HTTPClient: &http.Client{},
+	}
+
+	client.init()
+
+	return &client
+}
+
 // init sets up all the handlers.
 func (c *Client) init() {
 	c.Project = &ProjectHandler{client: c}
