@@ -26,6 +26,14 @@ type (
 	// '0' is false. '1' is true.
 	NumberAsBool uint8
 
+	Template struct {
+		ID             int64  `json:"id"`
+		Name           string `json:"title"`
+		Category       string `json:"category"`
+		Description    string `json:"description"`
+		DefaultVersion string `json:"DefaultVersion"`
+	}
+
 	ServiceAdmin struct {
 		URL      string `json:"url"`
 		User     string `json:"user"`
@@ -117,6 +125,45 @@ type (
 		IsAppAutoUpdateEnabled    NumberAsBool `json:"app_AutoUpdate_Enabled"`
 	}
 )
+
+func (h *ServiceHandler) GetTemplatesList() ([]*Template, error) {
+	type getTemplatesListRequest struct {
+		JWT string `json:"jwt"`
+	}
+
+	type getTemplatesListResponse struct {
+		Templates []Template `json:"instances"`
+	}
+
+	req := getTemplatesListRequest{
+		JWT: h.client.jwt,
+	}
+
+	bts, err := h.client.sendGetRequest(
+		fmt.Sprintf("%s/api/servers/getTemplates", h.client.BaseURL),
+		req,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var res getTemplatesListResponse
+	if err = checkAPIResponse(bts, &res); err != nil {
+		return nil, err
+	}
+
+	if res.Templates == nil || len(res.Templates) == 0 {
+		return nil, fmt.Errorf("templates not found")
+	}
+
+	var templates []*Template
+	for _, template := range res.Templates {
+		template := template // avoid iteration with same pointer
+		templates = append(templates, &template)
+	}
+
+	return templates, nil
+}
 
 func (h *ServiceHandler) Get(projectID, serviceID string) (*Service, error) {
 	type getServiceRequest struct {

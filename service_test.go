@@ -21,6 +21,16 @@ func setupServiceTestCase(t *testing.T) *Client {
 	return c
 }
 
+func TestServiceHandler_GetTemplatesList(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	templates, err := c.Service.GetTemplatesList()
+	require.NoError(t, err, "expected no error when getting templates")
+	require.NotNil(t, templates, "expected non-nil templates")
+	require.NotEqual(t, 0, len(templates), "expected at least 1 template")
+}
+
 func TestServiceHandler_Get(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
