@@ -27,11 +27,13 @@ type (
 	NumberAsBool uint8
 
 	Template struct {
-		ID             int64  `json:"id"`
-		Name           string `json:"title"`
-		Category       string `json:"category"`
-		Description    string `json:"description"`
-		DefaultVersion string `json:"DefaultVersion"`
+		ID                  int64  `json:"id"`
+		Name                string `json:"title"`
+		Category            string `json:"category"`
+		Description         string `json:"description"`
+		Logo                string `json:"mainImage"`
+		DockerHubImage      string `json:"dockerhub_image"`
+		DockerHubDefaultTag string `json:"dockerhub_default_tag"`
 	}
 
 	ServiceAdmin struct {
@@ -148,6 +150,7 @@ func (h *ServiceHandler) GetTemplatesList() ([]*Template, error) {
 	var templates []*Template
 	for _, template := range res.Templates {
 		template := template // avoid iteration with same pointer
+		template.Logo = strings.Replace(template.Logo, "//", "https://", 1)
 		templates = append(templates, &template)
 	}
 
