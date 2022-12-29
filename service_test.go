@@ -1,7 +1,6 @@
 package elestio
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -50,7 +49,6 @@ func TestServiceHandler_Get(t *testing.T) {
 	admin, err := c.Service.GetServiceAdmin(service)
 	require.NoError(t, err, "expected no error when getting service admin")
 	require.NotNil(t, admin, "expected non-nil service admin")
-	fmt.Fprintf(os.Stdout, "Service admin: %v", admin)
 }
 
 func TestServiceHandler_GetList(t *testing.T) {
@@ -74,19 +72,19 @@ func TestServiceHandler_Create(t *testing.T) {
 
 	service, err := c.Service.Create(CreateServiceRequest{
 		ProjectID:    projectId,
-		ServerName:   "test-service",
-		ServerType:   "SMALL-1C-2G",
+		ServerName:   "pg-asia",
+		ServerType:   "MICRO-1C-1G",
 		TemplateID:   11,
 		Version:      "14",
-		ProviderName: "hetzner",
-		Datacenter:   "fsn1",
+		ProviderName: "Amazon Lightsail",
+		Datacenter:   "ap-northeast-2",
 		SupportLevel: "level1",
 		AdminEmail:   "adamkrim.dev@gmail.com",
 	})
 
 	require.NoError(t, err, "expected no error when creating service")
 	require.NotNil(t, service, "expected non-nil service")
-	require.Equal(t, "test-service", service.ServerName, "expected service name to be test-service")
+	require.Equal(t, "pg-asia", service.ServerName, "expected service name to be pg-asia")
 }
 
 func TestServiceHandler_Delete(t *testing.T) {
