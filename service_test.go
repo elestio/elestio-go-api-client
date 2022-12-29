@@ -70,8 +70,10 @@ func TestServiceHandler_Create(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
+	projectId := "2318"
+
 	service, err := c.Service.Create(CreateServiceRequest{
-		ProjectID:    "596",
+		ProjectID:    projectId,
 		ServerName:   "test-service",
 		ServerType:   "SMALL-1C-2G",
 		TemplateID:   11,

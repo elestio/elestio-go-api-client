@@ -1,7 +1,6 @@
 package elestio
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -252,7 +251,7 @@ func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {
 
 	type createServiceResponse struct {
 		APIResponse
-		ID json.Number `json:"providerServerID"`
+		ID FlexString `json:"providerServerID"`
 	}
 
 	fullReq := createServiceFullRequest{
@@ -279,7 +278,7 @@ func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {
 
 	// Create request returns the ID of the service, but not the details.
 	// So we need to get the full details of the service.
-	service, err := h.Get(req.ProjectID, res.ID.String())
+	service, err := h.Get(req.ProjectID, string(res.ID))
 	if err != nil {
 		return nil, err
 	}
