@@ -286,11 +286,11 @@ func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {
 	return h.formatServiceForClient(service)
 }
 
-func (h *ServiceHandler) Delete(projectID, serviceID string) error {
+func (h *ServiceHandler) Delete(projectID, serviceID string, keepBackups bool) error {
 	type deleteServiceRequest struct {
 		ProjectID       string `json:"projectID"`
 		ServiceID       string `json:"vmID"`
-		IsWithoutBackup string `json:"isDeleteServiceWithBackup"`
+		IsWithoutBackup bool   `json:"isDeleteServiceWithBackup"`
 		JWT             string `json:"jwt"`
 	}
 
@@ -301,7 +301,7 @@ func (h *ServiceHandler) Delete(projectID, serviceID string) error {
 	req := deleteServiceRequest{
 		ProjectID:       projectID,
 		ServiceID:       serviceID,
-		IsWithoutBackup: "false",
+		IsWithoutBackup: !keepBackups,
 		JWT:             h.client.jwt,
 	}
 

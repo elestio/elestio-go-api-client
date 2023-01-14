@@ -92,9 +92,9 @@ func TestServiceHandler_Delete(t *testing.T) {
 	c := setupServiceTestCase(t)
 
 	projectID := "596"
-	serviceID := "26127402"
+	serviceID := "27363147"
 
-	err := c.Service.Delete(projectID, serviceID)
+	err := c.Service.Delete(projectID, serviceID, false)
 	require.NoError(t, err, "expected no error when deleting service")
 
 	service, err := c.Service.Get(projectID, serviceID)
