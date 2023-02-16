@@ -733,6 +733,8 @@ func (h *ServiceHandler) GetServiceDatabaseAdmin(service *Service) (*ServiceData
 
 // GetServiceCustomDomainNames returns the custom domain names configured for a service,
 func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]string, error) {
+	var empty []string
+
 	req := struct {
 		JWT       string `json:"jwt"`
 		ServiceID string `json:"vmID"`
@@ -745,12 +747,12 @@ func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]strin
 
 	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
 	if err != nil {
-		return nil, err
+		return &empty, nil
 	}
 
 	var customDomainNames []string
 	if err := checkAPIResponse(bts, &customDomainNames); err != nil {
-		return nil, err
+		return &empty, nil
 	}
 
 	// Remove the default service CNAME from the list of custom domain names
