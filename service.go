@@ -70,6 +70,7 @@ type (
 		IPV4                                        string       `json:"ipv4"`
 		IPV6                                        string       `json:"ipv6"`
 		CNAME                                       string       `json:"cname"`
+		CustomDomainNames                           []string     `json:"customDomainNames"`
 		Country                                     string       `json:"country"`
 		City                                        string       `json:"city"`
 		AdminUser                                   string       `json:"adminUser"`
@@ -527,6 +528,48 @@ func (h *ServiceHandler) EnableFirewall(serviceId string) error {
 	return checkAPIResponse(bts, nil)
 }
 
+func (h *ServiceHandler) AddCustomDomainName(serviceId string, domain string) error {
+	req := struct {
+		JWT       string `json:"jwt"`
+		ServiceID string `json:"vmID"`
+		Action    string `json:"action"`
+		Domain    string `json:"domain"`
+	}{
+		JWT:       h.client.jwt,
+		ServiceID: serviceId,
+		Action:    "SSLDomainsAdd",
+		Domain:    domain,
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	if err != nil {
+		return err
+	}
+
+	return checkAPIResponse(bts, nil)
+}
+
+func (h *ServiceHandler) RemoveCustomDomainName(serviceId string, domain string) error {
+	req := struct {
+		JWT       string `json:"jwt"`
+		ServiceID string `json:"vmID"`
+		Action    string `json:"action"`
+		Domain    string `json:"domain"`
+	}{
+		JWT:       h.client.jwt,
+		ServiceID: serviceId,
+		Action:    "SSLDomainsRemove",
+		Domain:    domain,
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	if err != nil {
+		return err
+	}
+
+	return checkAPIResponse(bts, nil)
+}
+
 func (h *ServiceHandler) DoActionOnServer(serviceId string, action string) error {
 	req := struct {
 		JWT       string `json:"jwt"`
@@ -688,6 +731,31 @@ func (h *ServiceHandler) GetServiceDatabaseAdmin(service *Service) (*ServiceData
 	return &databaseAdmin, nil
 }
 
+// GetServiceCustomDomainNames returns the custom domain names configured for a service,
+func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]string, error) {
+	req := struct {
+		JWT       string `json:"jwt"`
+		ServiceID string `json:"vmID"`
+		Action    string `json:"action"`
+	}{
+		JWT:       h.client.jwt,
+		ServiceID: service.ID,
+		Action:    "SSLDomainsList",
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	if err != nil {
+		return nil, err
+	}
+
+	var customDomainNames []string
+	if err := checkAPIResponse(bts, &customDomainNames); err != nil {
+		return nil, err
+	}
+
+	return &customDomainNames, nil
+}
+
 func (h *ServiceHandler) formatServiceForClient(service *Service) (*Service, error) {
 	if service == nil {
 		return nil, fmt.Errorf("cannot format nil service")
@@ -712,6 +780,12 @@ func (h *ServiceHandler) formatServiceForClient(service *Service) (*Service, err
 		return nil, fmt.Errorf("failed to get service database admin: %s", err)
 	}
 	service.DatabaseAdmin = *databaseAdmin
+
+	customDomainNames, err := h.GetServiceCustomDomainNames(service)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service custom domain names: %s", err)
+	}
+	service.CustomDomainNames = *customDomainNames
 
 	return service, nil
 }

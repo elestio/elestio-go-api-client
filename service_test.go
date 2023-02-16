@@ -1,6 +1,7 @@
 package elestio
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -38,17 +39,15 @@ func TestServiceHandler_Get(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	projectID := "2234"
-	serviceID := "26725069"
+	projectID := "596"
+	serviceID := "28926765"
 
 	service, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
 	require.NotNil(t, service, "expected non-nil service")
 	require.Equal(t, serviceID, service.ID, "expected service ID to be "+serviceID)
 
-	admin, err := c.Service.GetServiceAdmin(service)
-	require.NoError(t, err, "expected no error when getting service admin")
-	require.NotNil(t, admin, "expected non-nil service admin")
+	// fmt.Fprintf(os.Stdout, "Service: %v", service)
 }
 
 func TestServiceHandler_GetList(t *testing.T) {
@@ -417,4 +416,36 @@ func TestServiceHandler_EnableFirewall(t *testing.T) {
 	require.NotNil(t, updatedService, "expected non-nil service")
 	require.Equal(t, serviceID, updatedService.ID, "expected service ID to be"+serviceID)
 	require.Equal(t, NumberAsBool(1), updatedService.FirewallEnabled, "expected firewall to be enabled")
+}
+
+func TestServiceHandler_AddCustomDomain(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	projectID := "596"
+	serviceID := "28926765"
+
+	err := c.Service.AddCustomDomainName(serviceID, "test.com")
+	require.NoError(t, err, "expected no error when enabling firewall")
+
+	updatedService, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting service")
+
+	fmt.Fprintf(os.Stdout, "Service: %v", updatedService)
+}
+
+func TestServiceHandler_RemoveCustomDomain(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	projectID := "596"
+	serviceID := "28926765"
+
+	err := c.Service.RemoveCustomDomainName(serviceID, "test.com")
+	require.NoError(t, err, "expected no error when enabling firewall")
+
+	updatedService, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting service")
+
+	fmt.Fprintf(os.Stdout, "Service: %v", updatedService)
 }
