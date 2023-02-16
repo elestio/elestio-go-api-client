@@ -753,6 +753,9 @@ func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]strin
 		return nil, err
 	}
 
+	// Remove the default service CNAME from the list of custom domain names
+	customDomainNames = RemoveStringFromSlice(customDomainNames, service.CNAME)
+
 	return &customDomainNames, nil
 }
 
