@@ -39,8 +39,8 @@ func TestServiceHandler_Get(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	projectID := "596"
-	serviceID := "28926765"
+	projectID := "3234"
+	serviceID := "29648534"
 
 	service, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
@@ -426,7 +426,7 @@ func TestServiceHandler_AddCustomDomain(t *testing.T) {
 	serviceID := "28926765"
 
 	err := c.Service.AddCustomDomainName(serviceID, "test.com")
-	require.NoError(t, err, "expected no error when enabling firewall")
+	require.NoError(t, err, "expected no error when adding custom domain name")
 
 	updatedService, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
@@ -442,10 +442,42 @@ func TestServiceHandler_RemoveCustomDomain(t *testing.T) {
 	serviceID := "28926765"
 
 	err := c.Service.RemoveCustomDomainName(serviceID, "test.com")
-	require.NoError(t, err, "expected no error when enabling firewall")
+	require.NoError(t, err, "expected no error when removing custom domain name")
 
 	updatedService, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
 
 	fmt.Fprintf(os.Stdout, "Service: %v", updatedService)
+}
+
+func TestServiceHandler_AddSSHKey(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	projectID := "3234"
+	serviceID := "29648534"
+
+	err := c.Service.AddSSHKey(serviceID, "test", "ssh-rsa fakeKey adam@macbook")
+	require.NoError(t, err, "expected no error when adding ssh key")
+
+	updatedService, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting service")
+
+	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHKeys)
+}
+
+func TestServiceHandler_RemoveSSHKey(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	projectID := "3234"
+	serviceID := "29648534"
+
+	err := c.Service.RemoveSSHKey(serviceID, "test")
+	require.NoError(t, err, "expected no error when removing ssh key")
+
+	updatedService, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting service")
+
+	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHKeys)
 }

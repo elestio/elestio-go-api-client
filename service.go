@@ -49,62 +49,69 @@ type (
 		Command  string
 	}
 
+	ServiceSSHKey struct {
+		ID        int64  `json:"lineID"`
+		KeyName   string `json:"name"`
+		PublicKey string `json:"keys"`
+	}
+
 	Service struct {
-		ID                                          string       `json:"vmID"`
-		ProjectID                                   string       `json:"projectID"`
-		ServerName                                  string       `json:"displayName"`
-		ServerType                                  string       `json:"serverType"`
-		TemplateID                                  int64        `json:"template"`
-		Version                                     string       `json:"selected_software_tag"`
-		ProviderName                                string       `json:"provider"`
-		Datacenter                                  string       `json:"datacenter"`
-		SupportLevel                                string       `json:"support"`
-		AdminEmail                                  string       `json:"email"`
-		Category                                    string       `json:"category"`
-		Status                                      string       `json:"status"`
-		DeploymentStatus                            string       `json:"deploymentStatus"`
-		DeploymentStartedAt                         string       `json:"deploymentStart"`
-		DeploymentEndedAt                           string       `json:"deploymentEnd"`
-		CreatorName                                 string       `json:"creatorName"`
-		CreatedAt                                   string       `json:"creationDate"`
-		IPV4                                        string       `json:"ipv4"`
-		IPV6                                        string       `json:"ipv6"`
-		CNAME                                       string       `json:"cname"`
-		CustomDomainNames                           []string     `json:"customDomainNames"`
-		Country                                     string       `json:"country"`
-		City                                        string       `json:"city"`
-		AdminUser                                   string       `json:"adminUser"`
-		RootAppPath                                 string       `json:"rootAppPath"`
-		GlobalIP                                    string       `json:"globalIP"`
-		AdminExternalPort                           int64        `json:"adminExternalPort"`
-		AdminInternalPort                           int64        `json:"adminInternalPort"`
-		TrafficOutgoing                             int64        `json:"traffic_outgoing"`
-		TrafficIncoming                             int64        `json:"traffic_ingoing"`
-		TrafficIncluded                             int64        `json:"traffic_included"`
-		Cores                                       int64        `json:"cores"`
-		RAMSizeGB                                   string       `json:"ramGB"`
-		StorageSizeGB                               int64        `json:"storageSizeGB"`
-		PricePerHour                                string       `json:"pricePerHour"`
-		AppAutoUpdatesEnabled                       NumberAsBool `json:"app_AutoUpdate_Enabled"`
-		AppAutoUpdatesDayOfWeek                     int64        `json:"app_AutoUpdate_DayOfWeek"`
-		AppAutoUpdatesHour                          int64        `json:"app_AutoUpdate_Hour"`
-		AppAutoUpdatesMinute                        int64        `json:"app_AutoUpdate_Minute"`
-		SystemAutoUpdatesEnabled                    NumberAsBool `json:"system_AutoUpdate_Enabled"`
-		SystemAutoUpdatesSecurityPatchesOnlyEnabled NumberAsBool `json:"system_AutoUpdate_SecurityPatchesOnly"`
-		SystemAutoUpdatesRebootDayOfWeek            int64        `json:"system_AutoUpdate_RebootDayOfWeek"`
-		SystemAutoUpdatesRebootHour                 int64        `json:"system_AutoUpdate_RebootHour"`
-		SystemAutoUpdatesRebootMinute               int64        `json:"system_AutoUpdate_RebootMinute"`
-		BackupsEnabled                              NumberAsBool `json:"backupsActivated"`
-		RemoteBackupsEnabled                        NumberAsBool `json:"remoteBackupsActivated"`
-		ExternalBackupsEnabled                      NumberAsBool `json:"isExternalBackupActivated"`
-		ExternalBackupsUpdateDayOfWeek              int64        `json:"externalBackupUpdateDay"`
-		ExternalBackupsUpdateHour                   int64        `json:"externalBackupUpdateHour"`
-		ExternalBackupsUpdateMinute                 int64        `json:"externalBackupUpdateMinute"`
-		ExternalBackupsUpdateType                   string       `json:"externalBackupUpdateType"`
-		ExternalBackupsRetainDayOfWeek              int64        `json:"externalBackupRetainDay"`
-		FirewallEnabled                             NumberAsBool `json:"isFirewallActivated"`
-		FirewallID                                  string       `json:"firewall_id"`
-		FirewallPorts                               string       `json:"firewallPorts"`
+		ID                                          string          `json:"vmID"`
+		ProjectID                                   string          `json:"projectID"`
+		ServerName                                  string          `json:"displayName"`
+		ServerType                                  string          `json:"serverType"`
+		TemplateID                                  int64           `json:"template"`
+		Version                                     string          `json:"selected_software_tag"`
+		ProviderName                                string          `json:"provider"`
+		Datacenter                                  string          `json:"datacenter"`
+		SupportLevel                                string          `json:"support"`
+		AdminEmail                                  string          `json:"email"`
+		Category                                    string          `json:"category"`
+		Status                                      string          `json:"status"`
+		DeploymentStatus                            string          `json:"deploymentStatus"`
+		DeploymentStartedAt                         string          `json:"deploymentStart"`
+		DeploymentEndedAt                           string          `json:"deploymentEnd"`
+		CreatorName                                 string          `json:"creatorName"`
+		CreatedAt                                   string          `json:"creationDate"`
+		IPV4                                        string          `json:"ipv4"`
+		IPV6                                        string          `json:"ipv6"`
+		CNAME                                       string          `json:"cname"`
+		CustomDomainNames                           []string        `json:"customDomainNames"`
+		SSHKeys                                     []ServiceSSHKey `json:"sshKeys"`
+		Country                                     string          `json:"country"`
+		City                                        string          `json:"city"`
+		AdminUser                                   string          `json:"adminUser"`
+		RootAppPath                                 string          `json:"rootAppPath"`
+		GlobalIP                                    string          `json:"globalIP"`
+		AdminExternalPort                           int64           `json:"adminExternalPort"`
+		AdminInternalPort                           int64           `json:"adminInternalPort"`
+		TrafficOutgoing                             int64           `json:"traffic_outgoing"`
+		TrafficIncoming                             int64           `json:"traffic_ingoing"`
+		TrafficIncluded                             int64           `json:"traffic_included"`
+		Cores                                       int64           `json:"cores"`
+		RAMSizeGB                                   string          `json:"ramGB"`
+		StorageSizeGB                               int64           `json:"storageSizeGB"`
+		PricePerHour                                string          `json:"pricePerHour"`
+		AppAutoUpdatesEnabled                       NumberAsBool    `json:"app_AutoUpdate_Enabled"`
+		AppAutoUpdatesDayOfWeek                     int64           `json:"app_AutoUpdate_DayOfWeek"`
+		AppAutoUpdatesHour                          int64           `json:"app_AutoUpdate_Hour"`
+		AppAutoUpdatesMinute                        int64           `json:"app_AutoUpdate_Minute"`
+		SystemAutoUpdatesEnabled                    NumberAsBool    `json:"system_AutoUpdate_Enabled"`
+		SystemAutoUpdatesSecurityPatchesOnlyEnabled NumberAsBool    `json:"system_AutoUpdate_SecurityPatchesOnly"`
+		SystemAutoUpdatesRebootDayOfWeek            int64           `json:"system_AutoUpdate_RebootDayOfWeek"`
+		SystemAutoUpdatesRebootHour                 int64           `json:"system_AutoUpdate_RebootHour"`
+		SystemAutoUpdatesRebootMinute               int64           `json:"system_AutoUpdate_RebootMinute"`
+		BackupsEnabled                              NumberAsBool    `json:"backupsActivated"`
+		RemoteBackupsEnabled                        NumberAsBool    `json:"remoteBackupsActivated"`
+		ExternalBackupsEnabled                      NumberAsBool    `json:"isExternalBackupActivated"`
+		ExternalBackupsUpdateDayOfWeek              int64           `json:"externalBackupUpdateDay"`
+		ExternalBackupsUpdateHour                   int64           `json:"externalBackupUpdateHour"`
+		ExternalBackupsUpdateMinute                 int64           `json:"externalBackupUpdateMinute"`
+		ExternalBackupsUpdateType                   string          `json:"externalBackupUpdateType"`
+		ExternalBackupsRetainDayOfWeek              int64           `json:"externalBackupRetainDay"`
+		FirewallEnabled                             NumberAsBool    `json:"isFirewallActivated"`
+		FirewallID                                  string          `json:"firewall_id"`
+		FirewallPorts                               string          `json:"firewallPorts"`
 		Env                                         map[string]string
 		Admin                                       ServiceAdmin
 		DatabaseAdmin                               ServiceDatabaseAdmin
@@ -570,6 +577,56 @@ func (h *ServiceHandler) RemoveCustomDomainName(serviceId string, domain string)
 	return checkAPIResponse(bts, nil)
 }
 
+func (h *ServiceHandler) AddSSHKey(serviceId string, keyName string, publicKey string) error {
+	// remove name from public key
+	parts := strings.Split(publicKey, " ")
+	if len(parts) > 2 {
+		publicKey = strings.Join(parts[:2], " ")
+	}
+
+	req := struct {
+		JWT       string `json:"jwt"`
+		ServiceID string `json:"vmID"`
+		Action    string `json:"action"`
+		KeyName   string `json:"title"`
+		PublicKey string `json:"keyHash"`
+	}{
+		JWT:       h.client.jwt,
+		ServiceID: serviceId,
+		Action:    "SSHPubKeysAdd",
+		KeyName:   keyName,
+		PublicKey: publicKey,
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	if err != nil {
+		return err
+	}
+
+	return checkAPIResponse(bts, nil)
+}
+
+func (h *ServiceHandler) RemoveSSHKey(serviceId string, keyName string) error {
+	req := struct {
+		JWT       string `json:"jwt"`
+		ServiceID string `json:"vmID"`
+		Action    string `json:"action"`
+		KeyName   string `json:"deleteParams"`
+	}{
+		JWT:       h.client.jwt,
+		ServiceID: serviceId,
+		Action:    "SSHPubKeysRemove",
+		KeyName:   keyName,
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	if err != nil {
+		return err
+	}
+
+	return checkAPIResponse(bts, nil)
+}
+
 func (h *ServiceHandler) DoActionOnServer(serviceId string, action string) error {
 	req := struct {
 		JWT       string `json:"jwt"`
@@ -731,7 +788,7 @@ func (h *ServiceHandler) GetServiceDatabaseAdmin(service *Service) (*ServiceData
 	return &databaseAdmin, nil
 }
 
-// GetServiceCustomDomainNames returns the custom domain names configured for a service,
+// GetServiceCustomDomainNames returns the custom domain names configured for a service
 func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]string, error) {
 	var empty []string
 
@@ -759,6 +816,45 @@ func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]strin
 	customDomainNames = RemoveStringFromSlice(customDomainNames, service.CNAME)
 
 	return &customDomainNames, nil
+}
+
+// GetServiceSSHKeys returns the ssh public keys configured for a service
+func (h *ServiceHandler) GetServiceSSHKeys(service *Service) (*[]ServiceSSHKey, error) {
+	var empty []ServiceSSHKey
+
+	req := struct {
+		JWT       string `json:"jwt"`
+		ServiceID string `json:"vmID"`
+		Action    string `json:"action"`
+	}{
+		JWT:       h.client.jwt,
+		ServiceID: service.ID,
+		Action:    "SSHPubKeysList",
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	if err != nil {
+		return &empty, nil
+	}
+
+	res := struct {
+		APIResponse
+		Data []ServiceSSHKey `json:"data"`
+	}{}
+
+	if err := checkAPIResponse(bts, &res); err != nil {
+		return &empty, nil
+	}
+
+	// We do not want to return the default key if it still exists (id=1)
+	filteredKeys := []ServiceSSHKey{}
+	for _, p := range res.Data {
+		if p.ID != 1 {
+			filteredKeys = append(filteredKeys, p)
+		}
+	}
+
+	return &filteredKeys, nil
 }
 
 func (h *ServiceHandler) formatServiceForClient(service *Service) (*Service, error) {
@@ -791,6 +887,12 @@ func (h *ServiceHandler) formatServiceForClient(service *Service) (*Service, err
 		return nil, fmt.Errorf("failed to get service custom domain names: %s", err)
 	}
 	service.CustomDomainNames = *customDomainNames
+
+	sshKeys, err := h.GetServiceSSHKeys(service)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service ssh keys: %s", err)
+	}
+	service.SSHKeys = *sshKeys
 
 	return service, nil
 }
