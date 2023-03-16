@@ -257,17 +257,12 @@ func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {
 		JWT                   string `json:"jwt"`
 	}
 
-	type createServiceResponse struct {
-		APIResponse
-		ID FlexString `json:"providerServerID"`
-	}
-
 	fullReq := createServiceFullRequest{
 		CreateServiceRequest:  req,
 		Data:                  "",
 		AppID:                 "",
 		DeploymentServiceType: "normal",
-		ServiceType:           "service",
+		ServiceType:           "Service",
 		JWT:                   h.client.jwt,
 	}
 
@@ -279,19 +274,18 @@ func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {
 		return nil, err
 	}
 
+	type createServiceResponse struct {
+		APIResponse
+		ID   FlexString `json:"providerServerID"`
+		Data Service    `json:"data"`
+	}
+
 	var res createServiceResponse
 	if err = checkAPIResponse(bts, &res); err != nil {
 		return nil, err
 	}
 
-	// Create request returns the ID of the service, but not the details.
-	// So we need to get the full details of the service.
-	service, err := h.Get(req.ProjectID, string(res.ID))
-	if err != nil {
-		return nil, err
-	}
-
-	return h.formatServiceForClient(service)
+	return h.formatServiceForClient(&res.Data)
 }
 
 func (h *ServiceHandler) Delete(projectID, serviceID string, keepBackups bool) error {
@@ -792,6 +786,10 @@ func (h *ServiceHandler) GetServiceDatabaseAdmin(service *Service) (*ServiceData
 func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]string, error) {
 	var empty []string
 
+	if service.DeploymentStatus != ServiceDeploymentStatusDeployed {
+		return &empty, nil
+	}
+
 	req := struct {
 		JWT       string `json:"jwt"`
 		ServiceID string `json:"vmID"`
@@ -821,6 +819,10 @@ func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]strin
 // GetServiceSSHKeys returns the ssh public keys configured for a service
 func (h *ServiceHandler) GetServiceSSHKeys(service *Service) (*[]ServiceSSHKey, error) {
 	var empty []ServiceSSHKey
+
+	if service.DeploymentStatus != ServiceDeploymentStatusDeployed {
+		return &empty, nil
+	}
 
 	req := struct {
 		JWT       string `json:"jwt"`

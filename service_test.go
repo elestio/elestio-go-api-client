@@ -67,23 +67,24 @@ func TestServiceHandler_Create(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	projectId := "2318"
+	projectId := "596"
 
 	service, err := c.Service.Create(CreateServiceRequest{
 		ProjectID:    projectId,
-		ServerName:   "pg-asia",
-		ServerType:   "MICRO-1C-1G",
+		ServerName:   "mypostgres",
+		ServerType:   "SMALL-1C-2G",
 		TemplateID:   11,
 		Version:      "14",
-		ProviderName: "Amazon Lightsail",
-		Datacenter:   "ap-northeast-2",
+		ProviderName: "hetzner",
+		Datacenter:   "fsn1",
 		SupportLevel: "level1",
 		AdminEmail:   "adamkrim.dev@gmail.com",
 	})
 
 	require.NoError(t, err, "expected no error when creating service")
 	require.NotNil(t, service, "expected non-nil service")
-	require.Equal(t, "pg-asia", service.ServerName, "expected service name to be pg-asia")
+	fmt.Fprintf(os.Stdout, "Service: %v", service)
+	require.Equal(t, "mypostgres", service.ServerName, "expected service name to be mypostgres")
 }
 
 func TestServiceHandler_Delete(t *testing.T) {

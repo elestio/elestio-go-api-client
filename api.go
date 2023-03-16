@@ -94,8 +94,22 @@ func (c *Client) sendRequest(method string, url string, body any) ([]byte, error
 		if (rsp.StatusCode == 408 || rsp.StatusCode >= 500) && retryCount > 0 && method == "GET" {
 			retryCount--
 			continue
-		} else if rsp.StatusCode < 200 || rsp.StatusCode >= 300 {
+		}
+
+		// Return error if status code is not 2xx
+		if rsp.StatusCode < 200 || rsp.StatusCode >= 300 {
 			return nil, fmt.Errorf("request failed with status code %d: %s", rsp.StatusCode, string(responseBody))
+		}
+
+		// Check response is valid
+		var res APIResponse
+		if err = checkAPIResponse(responseBody, &res); err != nil {
+			return nil, err
+		}
+
+		// Return error if response status is KO
+		if res.Status == "KO" {
+			return nil, fmt.Errorf("request failed with status code %d: %s", rsp.StatusCode, string(res.Message))
 		}
 
 		return responseBody, nil
