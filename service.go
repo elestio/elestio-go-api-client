@@ -18,6 +18,9 @@ const (
 
 	ServiceDeploymentStatusDeployed   string = "Deployed"
 	ServiceDeploymentStatusInProgress string = "IN PROGRESS"
+
+	ServiceFirewallPortProtocolTCP ServiceFirewallPortProtocol = "tcp"
+	ServiceFirewallPortProtocolUDP ServiceFirewallPortProtocol = "udp"
 )
 
 type (
@@ -54,6 +57,14 @@ type (
 		KeyName   string `json:"name"`
 		PublicKey string `json:"keys"`
 	}
+
+	ServiceFirewallPort struct {
+		// Port can be a single port or a range of ports. For example: "80" or "80-90".
+		Port     string
+		Protocol ServiceFirewallPortProtocol
+	}
+
+	ServiceFirewallPortProtocol string
 
 	Service struct {
 		ID                                          string          `json:"vmID"`
@@ -508,7 +519,37 @@ func (h *ServiceHandler) DisableFirewall(serviceId string) error {
 	return h.DoActionOnServer(serviceId, "disableFirewall")
 }
 
-func (h *ServiceHandler) EnableFirewall(serviceId string) error {
+func (h *ServiceHandler) EnableFirewall(serviceId string, ports []ServiceFirewallPort) error {
+	acceptedProtocols := []ServiceFirewallPortProtocol{ServiceFirewallPortProtocolTCP, ServiceFirewallPortProtocolUDP}
+	portMap := make(map[string]bool)
+	for _, port := range ports {
+		portMap[port.Port] = true
+
+		if !Contains(acceptedProtocols, port.Protocol) {
+			return fmt.Errorf("invalid firewall port protocol %s", port.Protocol)
+		}
+	}
+
+	if _, exists := portMap["22"]; !exists {
+		ports = append(ports, ServiceFirewallPort{
+			Port:     "22",
+			Protocol: ServiceFirewallPortProtocolTCP,
+		})
+	}
+
+	if _, exists := portMap["4242"]; !exists {
+		ports = append(ports, ServiceFirewallPort{
+			Port:     "4242",
+			Protocol: ServiceFirewallPortProtocolUDP,
+		})
+	}
+
+	var rules []string
+
+	for _, port := range ports {
+		rules = append(rules, fmt.Sprintf("{\"type\":\"INPUT\",\"port\":\"%s\",\"protocol\":\"%s\",\"targets\":[\"0.0.0.0/0\",\"::/0\"]}", port.Port, port.Protocol))
+	}
+
 	req := struct {
 		JWT       string `json:"jwt"`
 		ServiceID string `json:"vmID"`
@@ -518,7 +559,7 @@ func (h *ServiceHandler) EnableFirewall(serviceId string) error {
 		JWT:       h.client.jwt,
 		ServiceID: serviceId,
 		Action:    "enableFirewall",
-		Rules:     "[{\"type\":\"INPUT\",\"port\":\"22\",\"protocol\":\"tcp\",\"targets\":[\"0.0.0.0/0\",\"::/0\"]},{\"type\":\"INPUT\",\"port\":\"4242\",\"protocol\":\"udp\",\"targets\":[\"0.0.0.0/0\",\"::/0\"]},{\"type\":\"INPUT\",\"port\":\"34523\",\"protocol\":\"tcp\",\"targets\":[\"0.0.0.0/0\",\"::/0\"]},{\"type\":\"INPUT\",\"port\":\"34343\",\"protocol\":\"tcp\",\"targets\":[\"0.0.0.0/0\",\"::/0\"]}]",
+		Rules:     fmt.Sprintf("[%s]", strings.Join(rules, ",")),
 	}
 
 	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)

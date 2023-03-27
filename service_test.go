@@ -400,8 +400,8 @@ func TestServiceHandler_EnableFirewall(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	serviceID := "26454028"
-	projectID := "2130"
+	serviceID := "30466083"
+	projectID := "596"
 
 	service, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
@@ -409,7 +409,18 @@ func TestServiceHandler_EnableFirewall(t *testing.T) {
 	require.Equal(t, serviceID, service.ID, "expected service ID to be"+serviceID)
 	require.Equal(t, NumberAsBool(0), service.FirewallEnabled, "expected firewall to be disabled")
 
-	err = c.Service.EnableFirewall(serviceID)
+	ports := []ServiceFirewallPort{
+		{
+			Port:     "34523",
+			Protocol: ServiceFirewallPortProtocolTCP,
+		},
+		{
+			Port:     "34343",
+			Protocol: ServiceFirewallPortProtocolTCP,
+		},
+	}
+
+	err = c.Service.EnableFirewall(serviceID, ports)
 	require.NoError(t, err, "expected no error when enabling firewall")
 
 	updatedService, err := c.Service.Get(projectID, serviceID)
