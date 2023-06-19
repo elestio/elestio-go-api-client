@@ -287,8 +287,8 @@ func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {
 
 	type createServiceResponse struct {
 		APIResponse
-		ID   FlexString `json:"providerServerID"`
-		Data Service    `json:"data"`
+		ID   []FlexString `json:"providerServerID"`
+		Data []Service    `json:"data"`
 	}
 
 	var res createServiceResponse
@@ -296,7 +296,7 @@ func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {
 		return nil, err
 	}
 
-	return h.formatServiceForClient(&res.Data)
+	return h.formatServiceForClient(&res.Data[0])
 }
 
 func (h *ServiceHandler) Delete(projectID, serviceID string, keepBackups bool) error {
