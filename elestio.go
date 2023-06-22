@@ -17,8 +17,9 @@ type Client struct {
 	ApiKey     string
 	jwt        string
 
-	Project *ProjectHandler
-	Service *ServiceHandler
+	Project      *ProjectHandler
+	Service      *ServiceHandler
+	LoadBalancer *LoadBalancerHandler
 }
 
 func NewClient(email, apiKey string) (*Client, error) {
@@ -61,4 +62,5 @@ func NewUnsignedClient() *Client {
 func (c *Client) init() {
 	c.Project = &ProjectHandler{client: c}
 	c.Service = &ServiceHandler{client: c}
+	c.LoadBalancer = &LoadBalancerHandler{client: c}
 }
