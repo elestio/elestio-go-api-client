@@ -8,14 +8,32 @@ type LoadBalancerHandler struct {
 	client *Client
 }
 
+const (
+	LoadBalancerDeploymentStatusDeployed   string = "Deployed"
+	LoadBalancerDeploymentStatusInProgress string = "IN PROGRESS"
+)
+
 type (
 	LoadBalancer struct {
-		ID           string
-		ProjectID    string
-		ProviderName string
-		Datacenter   string
-		ServerType   string
-		Config       LoadBalancerConfig
+		ID               string
+		ProjectID        string
+		ProviderName     string
+		Datacenter       string
+		ServerType       string
+		Config           LoadBalancerConfig
+		CreatedAt        string
+		CreatorName      string
+		DeploymentStatus string
+		IPV4             string
+		IPV6             string
+		CNAME            string
+		Country          string
+		City             string
+		GlobalIP         string
+		Cores            int64
+		RAMSizeGB        string
+		StorageSizeGB    int64
+		PricePerHour     string
 	}
 
 	LoadBalancerConfig struct {
@@ -48,7 +66,55 @@ type (
 )
 
 func (h *LoadBalancerHandler) Get(projectID, loadBalancerID string) (*LoadBalancer, error) {
+	// Fetch load balancer details
 	reqDetails := struct {
+		ProjectID      string `json:"projectID"`
+		LoadBalancerID string `json:"vmID"`
+		JWT            string `json:"jwt"`
+	}{
+		ProjectID:      projectID,
+		LoadBalancerID: loadBalancerID,
+		JWT:            h.client.jwt,
+	}
+	btsDetails, err := h.client.sendPostRequest(
+		fmt.Sprintf("%s/api/servers/getServerDetails", h.client.BaseURL),
+		reqDetails,
+	)
+	if err != nil {
+		return nil, err
+	}
+	var resDetails struct {
+		APIResponse
+		Services []struct {
+			CreatedAt        string `json:"creationDate"`
+			CreatorName      string `json:"creatorName"`
+			DeploymentStatus string `json:"deploymentStatus"`
+			IPV4             string `json:"ipv4"`
+			IPV6             string `json:"ipv6"`
+			CNAME            string `json:"cname"`
+			Country          string `json:"country"`
+			City             string `json:"city"`
+			GlobalIP         string `json:"globalIP"`
+			Cores            int64  `json:"cores"`
+			RAMSizeGB        string `json:"ramGB"`
+			StorageSizeGB    int64  `json:"storageSizeGB"`
+			PricePerHour     string `json:"pricePerHour"`
+			// TODO: Add all API available fields later
+			// SSHKeys          []ServiceSSHKey `json:"sshKeys"`
+			// AlertsEnabled    NumberAsBool    `json:"isAlertsActivated"`
+		} `json:"serviceInfos"`
+	}
+	if err = checkAPIResponse(btsDetails, &resDetails); err != nil {
+		return nil, err
+	}
+	// API returns an array of services, but we only need the first one
+	if len(resDetails.Services) == 0 {
+		return nil, fmt.Errorf("load balancer not found")
+	}
+	details := resDetails.Services[0]
+
+	// Fetch load balancer config
+	reqConfig := struct {
 		ProjectID       string `json:"projectID"`
 		LoadBalancerID  string `json:"loadBalancerID"`
 		IsRestoreLb     bool   `json:"isRestoreLb"`
@@ -61,16 +127,14 @@ func (h *LoadBalancerHandler) Get(projectID, loadBalancerID string) (*LoadBalanc
 		IsActiveService: true,
 		JWT:             h.client.jwt,
 	}
-
-	btsDetails, err := h.client.sendPostRequest(
+	btsConfig, err := h.client.sendPostRequest(
 		fmt.Sprintf("%s/api/loadBalancer/getLBDetails", h.client.BaseURL),
-		reqDetails,
+		reqConfig,
 	)
 	if err != nil {
 		return nil, err
 	}
-
-	var resDetails struct {
+	var resConfig struct {
 		APIResponse
 		Data struct {
 			ProjectID              string                           `json:"projectID"`
@@ -92,31 +156,46 @@ func (h *LoadBalancerHandler) Get(projectID, loadBalancerID string) (*LoadBalanc
 			RemoveResponseHeaders  []string                         `json:"removeResponseHeaders"`
 		} `json:"data"`
 	}
-	if err = checkAPIResponse(btsDetails, &resDetails); err != nil {
+	if err = checkAPIResponse(btsConfig, &resConfig); err != nil {
 		return nil, err
 	}
+	config := resConfig.Data
 
+	// Build load balancer struct
 	loadBalancer := LoadBalancer{
 		ID:           loadBalancerID,
-		ProjectID:    resDetails.Data.ProjectID,
-		ProviderName: resDetails.Data.ProviderName,
-		Datacenter:   resDetails.Data.Datacenter,
-		ServerType:   resDetails.Data.ServerType,
+		ProjectID:    config.ProjectID,
+		ProviderName: config.ProviderName,
+		Datacenter:   config.Datacenter,
+		ServerType:   config.ServerType,
 		Config: LoadBalancerConfig{
-			HostHeader:             resDetails.Data.HostHeader,
-			IsAccessLogsEnabled:    resDetails.Data.IsAccessLogsEnabled,
-			IsForceHTTPSEnabled:    resDetails.Data.IsForceHTTPSEnabled,
-			IPRateLimit:            resDetails.Data.IPRateLimit,
-			IsIPRateLimitEnabled:   resDetails.Data.IsIPRateLimitEnabled,
-			OutputCacheInSeconds:   resDetails.Data.OutputCacheInSeconds,
-			IsStickySessionEnabled: resDetails.Data.IsStickySessionEnabled,
-			IsProxyProtocolEnabled: resDetails.Data.IsProxyProtocolEnabled,
-			SSLDomains:             resDetails.Data.SSLDomains,
-			ForwardRules:           resDetails.Data.ForwardRules,
-			OutputHeaders:          resDetails.Data.OutputHeaders,
-			TargetServices:         resDetails.Data.TargetServices,
-			RemoveResponseHeaders:  resDetails.Data.RemoveResponseHeaders,
+			HostHeader:             config.HostHeader,
+			IsAccessLogsEnabled:    config.IsAccessLogsEnabled,
+			IsForceHTTPSEnabled:    config.IsForceHTTPSEnabled,
+			IPRateLimit:            config.IPRateLimit,
+			IsIPRateLimitEnabled:   config.IsIPRateLimitEnabled,
+			OutputCacheInSeconds:   config.OutputCacheInSeconds,
+			IsStickySessionEnabled: config.IsStickySessionEnabled,
+			IsProxyProtocolEnabled: config.IsProxyProtocolEnabled,
+			SSLDomains:             config.SSLDomains,
+			ForwardRules:           config.ForwardRules,
+			OutputHeaders:          config.OutputHeaders,
+			TargetServices:         config.TargetServices,
+			RemoveResponseHeaders:  config.RemoveResponseHeaders,
 		},
+		CreatedAt:        details.CreatedAt,
+		CreatorName:      details.CreatorName,
+		DeploymentStatus: details.DeploymentStatus,
+		IPV4:             details.IPV4,
+		IPV6:             details.IPV6,
+		CNAME:            details.CNAME,
+		Country:          details.Country,
+		City:             details.City,
+		GlobalIP:         details.GlobalIP,
+		Cores:            details.Cores,
+		RAMSizeGB:        details.RAMSizeGB,
+		StorageSizeGB:    details.StorageSizeGB,
+		PricePerHour:     details.PricePerHour,
 	}
 
 	return &loadBalancer, nil

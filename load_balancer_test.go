@@ -26,7 +26,7 @@ func TestLoadBalancerHandler_Get(t *testing.T) {
 	c := setupLoadBalancerTestCase(t)
 
 	projectID := "596"
-	loadBalancerID := "6aef78ac-5a40-4f4d-9f9f-a5048a362fcb"
+	loadBalancerID := "93c45b83-25e2-4da4-9fe2-51efac855d8b"
 
 	loadBalancer, err := c.LoadBalancer.Get(projectID, loadBalancerID)
 	require.NoError(t, err, "expected no error when getting loadBalancer")
@@ -44,9 +44,9 @@ func TestLoadBalancerHandler_Create(t *testing.T) {
 
 	loadBalancer, err := c.LoadBalancer.Create(CreateLoadBalancerRequest{
 		ProjectID:    projectId,
-		ProviderName: "hetzner",
-		Datacenter:   "fsn1",
-		ServerType:   "SMALL-1C-2G",
+		ProviderName: "scaleway",
+		Datacenter:   "fr-par-1",
+		ServerType:   "SMALL-2C-2G",
 		Config: CreateLoadBalancerRequestConfig{
 			HostHeader:             "$http_host",
 			IsAccessLogsEnabled:    true,
@@ -72,7 +72,7 @@ func TestLoadBalancerHandler_Create(t *testing.T) {
 				},
 			},
 			OutputHeaders:         []LoadBalancerConfigOutputHeader{},
-			TargetServices:        []string{"1032082a-1813-4225-804f-f89ceaeb6be3"},
+			TargetServices:        []string{"elest.io"},
 			RemoveResponseHeaders: []string{},
 		},
 	})
@@ -80,7 +80,7 @@ func TestLoadBalancerHandler_Create(t *testing.T) {
 	require.NoError(t, err, "expected no error when creating loadBalancer")
 	require.NotNil(t, loadBalancer, "expected non-nil loadBalancer")
 	fmt.Fprintf(os.Stdout, "LoadBalancer: %v", loadBalancer)
-	require.Equal(t, "SMALL-1C-2G", loadBalancer.ServerType, "expected loadBalancer server type to be SMALL-1C-2G")
+	require.Equal(t, "SMALL-2C-2G", loadBalancer.ServerType, "expected loadBalancer server type to be SMALL-1C-2G")
 }
 
 func TestLoadBalancerHandler_UpdateConfig(t *testing.T) {
