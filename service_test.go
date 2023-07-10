@@ -72,12 +72,13 @@ func TestServiceHandler_Create(t *testing.T) {
 	service, err := c.Service.Create(CreateServiceRequest{
 		ProjectID:    projectId,
 		ServerName:   "mypostgres",
-		ServerType:   "SMALL-1C-2G",
+		ServerType:   "SMALL-2C-2G",
 		TemplateID:   11,
 		Version:      "14",
-		ProviderName: "hetzner",
-		Datacenter:   "fsn1",
+		ProviderName: "scaleway",
+		Datacenter:   "fr-par-1",
 		SupportLevel: "level1",
+		AppPassword:  "L0ngPassw0rd",
 		AdminEmail:   "adamkrim.dev@gmail.com",
 	})
 

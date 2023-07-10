@@ -140,6 +140,7 @@ type (
 		ProviderName              string       `json:"providerName"`
 		Datacenter                string       `json:"datacenter"`
 		SupportLevel              string       `json:"support"`
+		AppPassword               string       `json:"appPassword"`
 		AdminEmail                string       `json:"adminEmail"`
 		IsSystemAutoUpdateEnabled NumberAsBool `json:"system_AutoUpdate_Enabled"`
 		IsAppAutoUpdateEnabled    NumberAsBool `json:"app_AutoUpdate_Enabled"`
