@@ -614,12 +614,6 @@ func (h *ServiceHandler) RemoveCustomDomainName(serviceId string, domain string)
 }
 
 func (h *ServiceHandler) AddSSHKey(serviceId string, keyName string, publicKey string) error {
-	// remove name from public key
-	parts := strings.Split(publicKey, " ")
-	if len(parts) > 2 {
-		publicKey = strings.Join(parts[:2], " ")
-	}
-
 	req := struct {
 		JWT       string `json:"jwt"`
 		ServiceID string `json:"vmID"`
@@ -890,15 +884,7 @@ func (h *ServiceHandler) GetServiceSSHKeys(service *Service) (*[]ServiceSSHKey, 
 		return &empty, nil
 	}
 
-	// We do not want to return the default key if it still exists (id=1)
-	filteredKeys := []ServiceSSHKey{}
-	for _, p := range res.Data {
-		if p.ID != 1 {
-			filteredKeys = append(filteredKeys, p)
-		}
-	}
-
-	return &filteredKeys, nil
+	return &res.Data, nil
 }
 
 func (h *ServiceHandler) formatServiceForClient(service *Service) (*Service, error) {

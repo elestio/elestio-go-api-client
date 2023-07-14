@@ -79,7 +79,7 @@ func TestServiceHandler_Create(t *testing.T) {
 		Datacenter:   "fr-par-1",
 		SupportLevel: "level1",
 		AppPassword:  "L0ngPassw0rd",
-		AdminEmail:   "adamkrim.dev@gmail.com",
+		// AdminEmail:   "adamkrim.dev@gmail.com",
 	})
 
 	require.NoError(t, err, "expected no error when creating service")
