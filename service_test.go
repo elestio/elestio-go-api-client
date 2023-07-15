@@ -494,3 +494,22 @@ func TestServiceHandler_RemoveSSHKey(t *testing.T) {
 
 	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHKeys)
 }
+
+func TestServiceHandler_Reboot(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	projectID := "6450"
+	serviceID := "409c54bf-e27e-4c5e-b760-aa0a3fcb2336"
+
+	service, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting initial service")
+	require.Equal(t, ServiceStatusRunning, service.Status, "expected initial service to be running")
+
+	err = c.Service.RebootServer(serviceID)
+	require.NoError(t, err, "expected no error when rebooting service")
+
+	rebootedService, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting rebooted service")
+	require.NotEqual(t, ServiceStatusRunning, rebootedService.Status, "expected rebooted service to be not running")
+}

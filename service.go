@@ -657,6 +657,10 @@ func (h *ServiceHandler) RemoveSSHKey(serviceId string, keyName string) error {
 	return checkAPIResponse(bts, nil)
 }
 
+func (h *ServiceHandler) RebootServer(serviceId string) error {
+	return h.DoActionOnServer(serviceId, "reboot")
+}
+
 func (h *ServiceHandler) DoActionOnServer(serviceId string, action string) error {
 	req := struct {
 		JWT       string `json:"jwt"`
