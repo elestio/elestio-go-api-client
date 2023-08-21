@@ -463,36 +463,36 @@ func TestServiceHandler_RemoveCustomDomain(t *testing.T) {
 	fmt.Fprintf(os.Stdout, "Service: %v", updatedService)
 }
 
-func TestServiceHandler_AddSSHKey(t *testing.T) {
+func TestServiceHandler_AddSSHPublicKey(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	projectID := "3234"
-	serviceID := "29648534"
+	projectID := "596"
+	serviceID := "c4686e74-c75c-4ca8-9aaa-26f83eaaae97"
 
-	err := c.Service.AddSSHKey(serviceID, "test", "ssh-rsa fakeKey adam@macbook")
+	err := c.Service.AddSSHPublicKey(serviceID, "test", "ssh-rsa fakeKey adam@macbook")
 	require.NoError(t, err, "expected no error when adding ssh key")
 
 	updatedService, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
 
-	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHKeys)
+	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHPublicKeys)
 }
 
-func TestServiceHandler_RemoveSSHKey(t *testing.T) {
+func TestServiceHandler_RemoveSSHPublicKey(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	projectID := "3234"
-	serviceID := "29648534"
+	projectID := "596"
+	serviceID := "c4686e74-c75c-4ca8-9aaa-26f83eaaae97"
 
-	err := c.Service.RemoveSSHKey(serviceID, "test")
+	err := c.Service.RemoveSSHPublicKey(serviceID, "test")
 	require.NoError(t, err, "expected no error when removing ssh key")
 
 	updatedService, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
 
-	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHKeys)
+	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHPublicKeys)
 }
 
 func TestServiceHandler_Reboot(t *testing.T) {
