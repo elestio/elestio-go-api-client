@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
 )
 
 func setupServiceTestCase(t *testing.T) *Client {
@@ -469,14 +470,22 @@ func TestServiceHandler_AddSSHPublicKey(t *testing.T) {
 
 	projectID := "596"
 	serviceID := "c4686e74-c75c-4ca8-9aaa-26f83eaaae97"
+	keyName := "test"
+	keyData := "ssh-rsa fakeKey test@macbook"
 
-	err := c.Service.AddSSHPublicKey(serviceID, "test", "ssh-rsa fakeKey adam@macbook")
+	err := c.Service.AddSSHPublicKey(serviceID, keyName, keyData)
 	require.NoError(t, err, "expected no error when adding ssh key")
 
 	updatedService, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
+	require.NotEqual(
+		t,
+		-1,
+		slices.IndexFunc(updatedService.SSHPublicKeys, func(s ServiceSSHPublicKey) bool { return s.Name == keyName && s.Key == keyData }),
+		"expected ssh key to be added",
+	)
 
-	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHPublicKeys)
+	fmt.Fprintf(os.Stdout, "Service ssh public keys after added: %v", updatedService.SSHPublicKeys)
 }
 
 func TestServiceHandler_RemoveSSHPublicKey(t *testing.T) {
@@ -485,14 +494,22 @@ func TestServiceHandler_RemoveSSHPublicKey(t *testing.T) {
 
 	projectID := "596"
 	serviceID := "c4686e74-c75c-4ca8-9aaa-26f83eaaae97"
+	keyName := "test"
+	keyData := "ssh-rsa fakeKey test@macbook"
 
 	err := c.Service.RemoveSSHPublicKey(serviceID, "test")
 	require.NoError(t, err, "expected no error when removing ssh key")
 
 	updatedService, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
+	require.Equal(
+		t,
+		-1,
+		slices.IndexFunc(updatedService.SSHPublicKeys, func(s ServiceSSHPublicKey) bool { return s.Name == keyName && s.Key == keyData }),
+		"expected ssh key to be removed",
+	)
 
-	fmt.Fprintf(os.Stdout, "Service: %v", updatedService.SSHPublicKeys)
+	fmt.Fprintf(os.Stdout, "Service ssh public key after remove: %v", updatedService.SSHPublicKeys)
 }
 
 func TestServiceHandler_Reboot(t *testing.T) {
