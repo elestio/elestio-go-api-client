@@ -12,24 +12,24 @@ type (
 	}
 
 	Project struct {
-		ID              json.Number `json:"id"`
-		Name            string      `json:"project_name"`
-		Description     string      `json:"description"`
-		TechnicalEmails string      `json:"technical_emails"`
-		NetworkCIDR     string      `json:"networkCIDR"`
-		CreationDate    string      `json:"creation_date"`
+		ID             json.Number `json:"id"`
+		Name           string      `json:"project_name"`
+		Description    string      `json:"description"`
+		TechnicalEmail string      `json:"technical_emails"`
+		NetworkCIDR    string      `json:"networkCIDR"`
+		CreationDate   string      `json:"creation_date"`
 	}
 
 	CreateProjectRequest struct {
-		Name            string `json:"name"`
-		Description     string `json:"description"`
-		TechnicalEmails string `json:"technicalEmails"`
+		Name           string `json:"name"`
+		Description    string `json:"description"`
+		TechnicalEmail string `json:"technicalEmails"`
 	}
 
 	UpdateProjectRequest struct {
-		Name            string `json:"name"`
-		Description     string `json:"description"`
-		TechnicalEmails string `json:"technicalEmails"`
+		Name           string `json:"name"`
+		Description    string `json:"description"`
+		TechnicalEmail string `json:"technicalEmails"`
 	}
 )
 

@@ -48,9 +48,9 @@ func TestProjectHandler_Create(t *testing.T) {
 	c := setupServiceTestCase(t)
 
 	req := CreateProjectRequest{
-		Name:            "test-project",
-		Description:     "test project",
-		TechnicalEmails: "adamkrim.dev@gmail.com",
+		Name:           "test-project",
+		Description:    "test project",
+		TechnicalEmail: "adamkrim.dev@gmail.com",
 	}
 
 	project, err := c.Project.Create(req)
@@ -64,9 +64,9 @@ func TestProjectHandler_Update(t *testing.T) {
 	c := setupServiceTestCase(t)
 
 	args := UpdateProjectRequest{
-		Name:            "test-project-updated",
-		Description:     "test project updated",
-		TechnicalEmails: "adamkrim.dev+updated@gmail.com",
+		Name:           "test-project-updated",
+		Description:    "test project updated",
+		TechnicalEmail: "adamkrim.dev+updated@gmail.com",
 	}
 
 	project, err := c.Project.Update("2003", args)
