@@ -51,6 +51,10 @@ func (h *ProjectHandler) Get(projectID string) (*Project, error) {
 
 // GetList is the method to get a list of projects.
 func (h *ProjectHandler) GetList() (*[]Project, error) {
+	type projetListRequest struct {
+		JWT string `json:"jwt"`
+	}
+
 	type projectListResponse struct {
 		APIResponse
 		ProjectList struct {
@@ -58,7 +62,14 @@ func (h *ProjectHandler) GetList() (*[]Project, error) {
 		} `json:"data"`
 	}
 
-	bts, err := h.client.sendGetRequest(fmt.Sprintf("%s/api/projects/getList", h.client.BaseURL), nil)
+	req := projetListRequest{
+		JWT: h.client.jwt,
+	}
+
+	bts, err := h.client.sendPostRequest(
+		fmt.Sprintf("%s/api/projects/getList", h.client.BaseURL),
+		req,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -69,6 +69,7 @@ type (
 	Service struct {
 		ID                                          string                `json:"vmID"`
 		ProjectID                                   string                `json:"projectID"`
+		ElestioID                                   int64                 `json:"id"`
 		ServerName                                  string                `json:"displayName"`
 		ServerType                                  string                `json:"serverType"`
 		TemplateID                                  int64                 `json:"template"`

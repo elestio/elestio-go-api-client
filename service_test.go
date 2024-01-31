@@ -40,8 +40,8 @@ func TestServiceHandler_Get(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	projectID := "3234"
-	serviceID := "29648534"
+	projectID := "13194"
+	serviceID := "42438730"
 
 	service, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
