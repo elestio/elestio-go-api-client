@@ -132,6 +132,13 @@ type (
 		AlertsEnabled                               NumberAsBool `json:"isAlertsActivated"`
 	}
 
+	ValidateConfigRequest struct {
+		TemplateId   int64  `json:"template"`
+		ProviderName string `json:"provider"`
+		Datacenter   string `json:"datacenter"`
+		ServerType   string `json:"serverType"`
+	}
+
 	CreateServiceRequest struct {
 		ProjectID                 string       `json:"projectId"`
 		ServerName                string       `json:"serverName"`
@@ -258,6 +265,24 @@ func (h *ServiceHandler) GetList(projectID string) ([]*Service, error) {
 	}
 
 	return services, nil
+}
+
+func (h *ServiceHandler) ValidateConfig(req ValidateConfigRequest) (isValid bool, err error) {
+	type validateConfigResponse struct {
+		APIResponse
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/validate", h.client.BaseURL), req)
+	if err != nil {
+		return false, err
+	}
+
+	var res validateConfigResponse
+	if err = checkAPIResponse(bts, &res); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {

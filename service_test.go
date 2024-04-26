@@ -64,6 +64,57 @@ func TestServiceHandler_GetList(t *testing.T) {
 	// require.Equal(t, 1, services.Service[0].ID, "expected service ID to be 1")
 }
 
+func TestServiceHandler_ValidateConfig(t *testing.T) {
+	c := setupServiceTestCase(t)
+
+	validConfigReq := ValidateConfigRequest{
+		TemplateId:   11,
+		ProviderName: "hetzner",
+		Datacenter:   "fsn1",
+		ServerType:   "SMALL-1C-2G",
+	}
+
+	isValid, err := c.Service.ValidateConfig(validConfigReq)
+	require.NoError(t, err, "expected no error when validating config")
+	require.True(t, isValid, "expected config to be valid")
+
+	isTemplateValid, err := c.Service.ValidateConfig(ValidateConfigRequest{
+		TemplateId:   999999,
+		ProviderName: validConfigReq.ProviderName,
+		Datacenter:   validConfigReq.Datacenter,
+		ServerType:   validConfigReq.ServerType,
+	})
+	require.Error(t, err, "expected error when validating invalid template config")
+	require.False(t, isTemplateValid, "expected config to be invalid")
+
+	isProviderNameValid, err := c.Service.ValidateConfig(ValidateConfigRequest{
+		TemplateId:   validConfigReq.TemplateId,
+		ProviderName: "invalid-provider",
+		Datacenter:   validConfigReq.Datacenter,
+		ServerType:   validConfigReq.ServerType,
+	})
+	require.Error(t, err, "expected error when validating invalid provider name config")
+	require.False(t, isProviderNameValid, "expected config to be invalid")
+
+	isDatacenterValid, err := c.Service.ValidateConfig(ValidateConfigRequest{
+		TemplateId:   validConfigReq.TemplateId,
+		ProviderName: validConfigReq.ProviderName,
+		Datacenter:   "invalid-datacenter",
+		ServerType:   validConfigReq.ServerType,
+	})
+	require.Error(t, err, "expected error when validating invalid datacenter config")
+	require.False(t, isDatacenterValid, "expected config to be invalid")
+
+	isServerTypeValid, err := c.Service.ValidateConfig(ValidateConfigRequest{
+		TemplateId:   validConfigReq.TemplateId,
+		ProviderName: validConfigReq.ProviderName,
+		Datacenter:   validConfigReq.Datacenter,
+		ServerType:   "invalid-servertype",
+	})
+	require.Error(t, err, "expected error when validating invalid server type config")
+	require.False(t, isServerTypeValid, "expected config to be invalid")
+}
+
 func TestServiceHandler_Create(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
