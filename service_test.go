@@ -132,6 +132,7 @@ func TestServiceHandler_Create(t *testing.T) {
 		SupportLevel: "level1",
 		AppPassword:  "L0ngPassw0rd",
 		// AdminEmail:   "adamkrim.dev@gmail.com",
+		CreatedFrom: "terraform",
 	})
 
 	require.NoError(t, err, "expected no error when creating service")

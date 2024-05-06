@@ -207,6 +207,7 @@ type CreateLoadBalancerRequest struct {
 	Datacenter   string                          `json:"datacenter"`
 	ServerType   string                          `json:"serverType"`
 	Config       CreateLoadBalancerRequestConfig `json:"loadBalancerPayload"`
+	CreatedFrom  string                          `json:"createdFrom"`
 }
 
 type CreateLoadBalancerRequestConfig struct {
@@ -226,6 +227,10 @@ type CreateLoadBalancerRequestConfig struct {
 }
 
 func (h *LoadBalancerHandler) Create(req CreateLoadBalancerRequest) (*LoadBalancer, error) {
+	if req.CreatedFrom == "" {
+		req.CreatedFrom = "goClient"
+	}
+
 	fullReq := struct {
 		CreateLoadBalancerRequest
 		ServiceType string `json:"serviceType"`

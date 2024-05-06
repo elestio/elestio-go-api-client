@@ -152,6 +152,7 @@ type (
 		AdminEmail                string       `json:"adminEmail"`
 		IsSystemAutoUpdateEnabled NumberAsBool `json:"system_AutoUpdate_Enabled"`
 		IsAppAutoUpdateEnabled    NumberAsBool `json:"app_AutoUpdate_Enabled"`
+		CreatedFrom               string       `json:"createdFrom"`
 	}
 )
 
@@ -293,6 +294,10 @@ func (h *ServiceHandler) Create(req CreateServiceRequest) (*Service, error) {
 		DeploymentServiceType string `json:"deploymentServiceType"` // "normal"
 		ServiceType           string `json:"serviceType"`           // "service"
 		JWT                   string `json:"jwt"`
+	}
+
+	if req.CreatedFrom == "" {
+		req.CreatedFrom = "goClient"
 	}
 
 	fullReq := createServiceFullRequest{
