@@ -26,7 +26,7 @@ func TestLoadBalancerHandler_Get(t *testing.T) {
 	c := setupLoadBalancerTestCase(t)
 
 	projectID := "596"
-	loadBalancerID := "93c45b83-25e2-4da4-9fe2-51efac855d8b"
+	loadBalancerID := "54654320"
 
 	loadBalancer, err := c.LoadBalancer.Get(projectID, loadBalancerID)
 	require.NoError(t, err, "expected no error when getting loadBalancer")
@@ -44,9 +44,9 @@ func TestLoadBalancerHandler_Create(t *testing.T) {
 
 	loadBalancer, err := c.LoadBalancer.Create(CreateLoadBalancerRequest{
 		ProjectID:    projectId,
-		ProviderName: "scaleway",
-		Datacenter:   "fr-par-1",
-		ServerType:   "SMALL-2C-2G",
+		ProviderName: "hetzner",
+		Datacenter:   "fsn1",
+		ServerType:   "MEDIUM-2C-4G",
 		Config: CreateLoadBalancerRequestConfig{
 			HostHeader:             "$http_host",
 			IsAccessLogsEnabled:    true,
@@ -80,7 +80,7 @@ func TestLoadBalancerHandler_Create(t *testing.T) {
 	require.NoError(t, err, "expected no error when creating loadBalancer")
 	require.NotNil(t, loadBalancer, "expected non-nil loadBalancer")
 	fmt.Fprintf(os.Stdout, "LoadBalancer: %v", loadBalancer)
-	require.Equal(t, "SMALL-2C-2G", loadBalancer.ServerType, "expected loadBalancer server type to be SMALL-1C-2G")
+	require.Equal(t, "MEDIUM-2C-4G", loadBalancer.ServerType, "expected loadBalancer server type to be MEDIUM-2C-4G")
 }
 
 func TestLoadBalancerHandler_UpdateConfig(t *testing.T) {
@@ -88,7 +88,7 @@ func TestLoadBalancerHandler_UpdateConfig(t *testing.T) {
 	c := setupLoadBalancerTestCase(t)
 
 	projectID := "596"
-	loadBalancerID := "34042456"
+	loadBalancerID := "54654320"
 
 	loadBalancer, err := c.LoadBalancer.Get(projectID, loadBalancerID)
 	require.NoError(t, err, "expected no error when getting initial loadBalancer")
@@ -119,7 +119,7 @@ func TestLoadBalancerHandler_Delete(t *testing.T) {
 	c := setupLoadBalancerTestCase(t)
 
 	projectID := "596"
-	loadBalancerID := "d23a7d5e-2437-4c74-9a97-0dc7b9423141"
+	loadBalancerID := "54654320"
 
 	err := c.LoadBalancer.Delete(projectID, loadBalancerID, false)
 	require.NoError(t, err, "expected no error when deleting loadBalancer")

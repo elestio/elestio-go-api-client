@@ -234,11 +234,13 @@ func (h *LoadBalancerHandler) Create(req CreateLoadBalancerRequest) (*LoadBalanc
 	fullReq := struct {
 		CreateLoadBalancerRequest
 		ServiceType string `json:"serviceType"`
+		TemplateID  string `json:"templateID"`
 		JWT         string `json:"jwt"`
 	}{
 		CreateLoadBalancerRequest: req,
 		ServiceType:               "LB",
 		JWT:                       h.client.jwt,
+		TemplateID:                "218",
 	}
 
 	bts, err := h.client.sendPostRequest(
