@@ -432,8 +432,8 @@ func TestServiceHandler_DisableFirewall(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	serviceID := "26454028"
-	projectID := "2130"
+	serviceID := "66470070"
+	projectID := "596"
 
 	service, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
@@ -451,11 +451,11 @@ func TestServiceHandler_DisableFirewall(t *testing.T) {
 	require.Equal(t, NumberAsBool(0), updatedService.FirewallEnabled, "expected firewall to be disabled")
 }
 
-func TestServiceHandler_EnableFirewall(t *testing.T) {
+func TestServiceHandler_EnableFirewallWithRules(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	serviceID := "30466083"
+	serviceID := "66470070"
 	projectID := "596"
 
 	service, err := c.Service.Get(projectID, serviceID)
@@ -464,25 +464,125 @@ func TestServiceHandler_EnableFirewall(t *testing.T) {
 	require.Equal(t, serviceID, service.ID, "expected service ID to be"+serviceID)
 	require.Equal(t, NumberAsBool(0), service.FirewallEnabled, "expected firewall to be disabled")
 
-	ports := []ServiceFirewallPort{
+	// Test with valid rules including required ports
+	rules := []ServiceFirewallRule{
 		{
-			Port:     "34523",
-			Protocol: ServiceFirewallPortProtocolTCP,
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "22",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
 		},
 		{
-			Port:     "34343",
-			Protocol: ServiceFirewallPortProtocolTCP,
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "4242",
+			Protocol: ServiceFirewallRuleProtocolUDP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+		{
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "80",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+		{
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "443",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+		{
+			Type:     ServiceFirewallRuleTypeOutput,
+			Port:     "443",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
 		},
 	}
 
-	err = c.Service.EnableFirewall(serviceID, ports)
-	require.NoError(t, err, "expected no error when enabling firewall")
+	err = c.Service.EnableFirewallWithRules(serviceID, rules)
+	require.NoError(t, err, "expected no error when enabling firewall with rules")
 
 	updatedService, err := c.Service.Get(projectID, serviceID)
 	require.NoError(t, err, "expected no error when getting service")
 	require.NotNil(t, updatedService, "expected non-nil service")
 	require.Equal(t, serviceID, updatedService.ID, "expected service ID to be"+serviceID)
 	require.Equal(t, NumberAsBool(1), updatedService.FirewallEnabled, "expected firewall to be enabled")
+}
+
+func TestServiceHandler_EnableFirewallWithRules_ValidationErrors(t *testing.T) {
+	// t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	serviceID := "66470070"
+
+	// Test invalid rule type
+	invalidRulesType := []ServiceFirewallRule{
+		{
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "80",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+		{
+			Type:     "INVALID",
+			Port:     "443",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+	}
+
+	err := c.Service.EnableFirewallWithRules(serviceID, invalidRulesType)
+	require.Error(t, err, "expected error when using invalid rule type")
+	require.Contains(t, err.Error(), "invalid rule type 'INVALID'", "expected specific error message about invalid rule type")
+}
+
+func TestServiceHandler_GetServiceFirewallRules(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	projectID := "596"
+	serviceID := "66470070"
+
+	// Get the service first
+	service, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting service")
+	require.NotNil(t, service, "expected non-nil service")
+
+	// Test getting firewall rules for a deployed service
+	if service.DeploymentStatus == ServiceDeploymentStatusDeployed {
+		rules, err := c.Service.GetServiceFirewallRules(service)
+		require.NoError(t, err, "expected no error when getting firewall rules")
+		require.NotNil(t, rules, "expected non-nil firewall rules")
+
+		// Verify that rules are properly formatted
+		for _, rule := range *rules {
+			require.True(t, rule.Type == ServiceFirewallRuleTypeInput || rule.Type == ServiceFirewallRuleTypeOutput, "expected rule type to be INPUT or OUTPUT")
+			require.NotEmpty(t, rule.Port, "expected rule port to not be empty")
+			require.NotEmpty(t, rule.Protocol, "expected rule protocol to not be empty")
+			require.NotNil(t, rule.Targets, "expected rule targets to not be nil")
+		}
+
+		// If firewall is enabled, we should have some rules
+		if service.FirewallEnabled == NumberAsBool(1) {
+			require.NotEmpty(t, *rules, "expected at least some firewall rules when firewall is enabled")
+		}
+
+		fmt.Fprintf(os.Stdout, "Firewall rules: %v", rules)
+	}
+}
+
+func TestServiceHandler_GetServiceFirewallRules_NotDeployed(t *testing.T) {
+	t.Skip("Skipping test")
+	nonDeployedService := &Service{
+		ID:               "test-service",
+		ProjectID:        "test-project",
+		DeploymentStatus: ServiceDeploymentStatusInProgress,
+	}
+
+	c := NewUnsignedClient()
+	rules, err := c.Service.GetServiceFirewallRules(nonDeployedService)
+	require.NoError(t, err, "expected no error when getting firewall rules for non-deployed service")
+	require.NotNil(t, rules, "expected non-nil firewall rules")
+	require.Empty(t, *rules, "expected empty firewall rules for non-deployed service")
 }
 
 func TestServiceHandler_AddCustomDomain(t *testing.T) {

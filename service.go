@@ -19,8 +19,13 @@ const (
 	ServiceDeploymentStatusDeployed   string = "Deployed"
 	ServiceDeploymentStatusInProgress string = "IN PROGRESS"
 
-	ServiceFirewallPortProtocolTCP ServiceFirewallPortProtocol = "tcp"
-	ServiceFirewallPortProtocolUDP ServiceFirewallPortProtocol = "udp"
+	// Firewall rule types
+	ServiceFirewallRuleTypeInput  string = "INPUT"
+	ServiceFirewallRuleTypeOutput string = "OUTPUT"
+
+	// Firewall rule protocols
+	ServiceFirewallRuleProtocolTCP string = "tcp"
+	ServiceFirewallRuleProtocolUDP string = "udp"
 )
 
 type (
@@ -58,13 +63,12 @@ type (
 		Key  string `json:"key"`
 	}
 
-	ServiceFirewallPort struct {
-		// Port can be a single port or a range of ports. For example: "80" or "80-90".
-		Port     string
-		Protocol ServiceFirewallPortProtocol
+	ServiceFirewallRule struct {
+		Type     string   `json:"type"`
+		Port     string   `json:"port"`
+		Protocol string   `json:"protocol"`
+		Targets  []string `json:"targets"`
 	}
-
-	ServiceFirewallPortProtocol string
 
 	Service struct {
 		ID                                          string                `json:"vmID"`
@@ -123,7 +127,7 @@ type (
 		ExternalBackupsRetainDayOfWeek              int64                 `json:"externalBackupRetainDay"`
 		FirewallEnabled                             NumberAsBool          `json:"isFirewallActivated"`
 		FirewallID                                  string                `json:"firewall_id"`
-		FirewallPorts                               string                `json:"firewallPorts"`
+		FirewallRules                               []ServiceFirewallRule
 		Env                                         map[string]string
 		Admin                                       ServiceAdmin
 		DatabaseAdmin                               ServiceDatabaseAdmin
@@ -171,7 +175,7 @@ func (h *ServiceHandler) GetTemplatesList() ([]*Template, error) {
 		return nil, err
 	}
 
-	if res.Templates == nil || len(res.Templates) == 0 {
+	if len(res.Templates) == 0 {
 		return nil, fmt.Errorf("templates not found")
 	}
 
@@ -216,7 +220,7 @@ func (h *ServiceHandler) Get(projectID, serviceID string) (*Service, error) {
 		return nil, err
 	}
 
-	if res.Services == nil || len(res.Services) == 0 {
+	if len(res.Services) == 0 {
 		return nil, fmt.Errorf("service not found")
 	}
 
@@ -551,35 +555,26 @@ func (h *ServiceHandler) DisableFirewall(serviceId string) error {
 	return h.DoActionOnServer(serviceId, "disableFirewall")
 }
 
-func (h *ServiceHandler) EnableFirewall(serviceId string, ports []ServiceFirewallPort) error {
-	acceptedProtocols := []ServiceFirewallPortProtocol{ServiceFirewallPortProtocolTCP, ServiceFirewallPortProtocolUDP}
-	portMap := make(map[string]bool)
-	for _, port := range ports {
-		portMap[port.Port] = true
-
-		if !Contains(acceptedProtocols, port.Protocol) {
-			return fmt.Errorf("invalid firewall port protocol %s", port.Protocol)
+func (h *ServiceHandler) EnableFirewallWithRules(serviceId string, rules []ServiceFirewallRule) error {
+	for _, rule := range rules {
+		if rule.Type != ServiceFirewallRuleTypeInput && rule.Type != ServiceFirewallRuleTypeOutput {
+			return fmt.Errorf("invalid rule type '%s': only '%s' and '%s' are supported", rule.Type, ServiceFirewallRuleTypeInput, ServiceFirewallRuleTypeOutput)
 		}
 	}
 
-	if _, exists := portMap["22"]; !exists {
-		ports = append(ports, ServiceFirewallPort{
-			Port:     "22",
-			Protocol: ServiceFirewallPortProtocolTCP,
-		})
-	}
-
-	if _, exists := portMap["4242"]; !exists {
-		ports = append(ports, ServiceFirewallPort{
-			Port:     "4242",
-			Protocol: ServiceFirewallPortProtocolUDP,
-		})
-	}
-
-	var rules []string
-
-	for _, port := range ports {
-		rules = append(rules, fmt.Sprintf("{\"type\":\"INPUT\",\"port\":\"%s\",\"protocol\":\"%s\",\"targets\":[\"0.0.0.0/0\",\"::/0\"]}", port.Port, port.Protocol))
+	var ruleStrings []string
+	for _, rule := range rules {
+		targetsJSON := "["
+		for i, target := range rule.Targets {
+			if i > 0 {
+				targetsJSON += ","
+			}
+			targetsJSON += fmt.Sprintf("\"%s\"", target)
+		}
+		targetsJSON += "]"
+		
+		ruleStrings = append(ruleStrings, fmt.Sprintf("{\"type\":\"%s\",\"port\":\"%s\",\"protocol\":\"%s\",\"targets\":%s}", 
+			rule.Type, rule.Port, rule.Protocol, targetsJSON))
 	}
 
 	req := struct {
@@ -591,7 +586,7 @@ func (h *ServiceHandler) EnableFirewall(serviceId string, ports []ServiceFirewal
 		JWT:       h.client.jwt,
 		ServiceID: serviceId,
 		Action:    "enableFirewall",
-		Rules:     fmt.Sprintf("[%s]", strings.Join(rules, ",")),
+		Rules:     fmt.Sprintf("[%s]", strings.Join(ruleStrings, ",")),
 	}
 
 	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
@@ -853,6 +848,41 @@ func (h *ServiceHandler) GetServiceDatabaseAdmin(service *Service) (*ServiceData
 	return &databaseAdmin, nil
 }
 
+// GetServiceFirewallRules returns all firewall rules configured for a service (INPUT and OUTPUT)
+func (h *ServiceHandler) GetServiceFirewallRules(service *Service) (*[]ServiceFirewallRule, error) {
+	var empty []ServiceFirewallRule
+
+	if service.DeploymentStatus != ServiceDeploymentStatusDeployed {
+		return &empty, nil
+	}
+
+	req := struct {
+		JWT       string `json:"jwt"`
+		ServiceID string `json:"vmID"`
+		Action    string `json:"action"`
+	}{
+		JWT:       h.client.jwt,
+		ServiceID: service.ID,
+		Action:    "getFirewallRules",
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	if err != nil {
+		return &empty, nil
+	}
+
+	res := struct {
+		APIResponse
+		Rules []ServiceFirewallRule `json:"rules"`
+	}{}
+
+	if err := checkAPIResponse(bts, &res); err != nil {
+		return &empty, nil
+	}
+
+	return &res.Rules, nil
+}
+
 // GetServiceCustomDomainNames returns the custom domain names configured for a service
 func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]string, error) {
 	var empty []string
@@ -946,6 +976,12 @@ func (h *ServiceHandler) formatServiceForClient(service *Service) (*Service, err
 		return nil, fmt.Errorf("failed to get service database admin: %s", err)
 	}
 	service.DatabaseAdmin = *databaseAdmin
+
+	firewallRules, err := h.GetServiceFirewallRules(service)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service firewall rules: %s", err)
+	}
+	service.FirewallRules = *firewallRules
 
 	customDomainNames, err := h.GetServiceCustomDomainNames(service)
 	if err != nil {
