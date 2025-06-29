@@ -1,4 +1,4 @@
-module github.com/elestio/elestio-go-api-client
+module github.com/elestio/elestio-go-api-client/v2
 
 go 1.19
 
