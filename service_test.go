@@ -631,6 +631,24 @@ func TestServiceHandler_RemoveCustomDomain(t *testing.T) {
 	fmt.Fprintf(os.Stdout, "Service: %v", updatedService)
 }
 
+func TestServiceHandler_GetCustomDomainNames(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	projectID := "596"
+	serviceID := "103550055"
+
+	service, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting service")
+	require.NotNil(t, service, "expected non-nil service")
+
+	customDomainNames, err := c.Service.GetServiceCustomDomainNames(service)
+	require.NoError(t, err, "expected no error when getting custom domain names")
+	require.NotNil(t, customDomainNames, "expected non-nil custom domain names")
+
+	fmt.Fprintf(os.Stdout, "Custom domain names: %v", *customDomainNames)
+}
+
 func TestServiceHandler_AddSSHPublicKey(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)

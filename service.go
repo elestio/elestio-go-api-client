@@ -1,6 +1,7 @@
 package elestio
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -905,13 +906,13 @@ func (h *ServiceHandler) GetServiceCustomDomainNames(service *Service) (*[]strin
 		Action:    "SSLDomainsList",
 	}
 
-	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	bts, err := h.client.sendPostRequestRaw(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
 	if err != nil {
 		return &empty, nil
 	}
 
 	var customDomainNames []string
-	if err := checkAPIResponse(bts, &customDomainNames); err != nil {
+	if err := json.Unmarshal(bts, &customDomainNames); err != nil {
 		return &empty, nil
 	}
 

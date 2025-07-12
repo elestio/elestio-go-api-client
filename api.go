@@ -43,11 +43,23 @@ func (c *Client) sendPostRequest(endpoint string, req interface{}) ([]byte, erro
 	return c.sendRequest("POST", endpoint, req)
 }
 
+func (c *Client) sendPostRequestRaw(endpoint string, req interface{}) ([]byte, error) {
+	return c.sendRequestRaw("POST", endpoint, req)
+}
+
 func (c *Client) sendDeleteRequest(endpoint string, req interface{}) ([]byte, error) {
 	return c.sendRequest("DELETE", endpoint, req)
 }
 
 func (c *Client) sendRequest(method string, url string, body any) ([]byte, error) {
+	return c.sendRequestCore(method, url, body, true)
+}
+
+func (c *Client) sendRequestRaw(method string, url string, body any) ([]byte, error) {
+	return c.sendRequestCore(method, url, body, false)
+}
+
+func (c *Client) sendRequestCore(method string, url string, body any, validateAPIResponse bool) ([]byte, error) {
 	var bts []byte
 	if body != nil {
 		var err error
@@ -101,15 +113,17 @@ func (c *Client) sendRequest(method string, url string, body any) ([]byte, error
 			return nil, fmt.Errorf("request failed with status code %d: %s", rsp.StatusCode, string(responseBody))
 		}
 
-		// Check response is valid
-		var res APIResponse
-		if err = checkAPIResponse(responseBody, &res); err != nil {
-			return nil, err
-		}
+		// Validate APIResponse if requested
+		if validateAPIResponse {
+			var res APIResponse
+			if err = checkAPIResponse(responseBody, &res); err != nil {
+				return nil, err
+			}
 
-		// Return error if response status is KO
-		if res.Status == "KO" {
-			return nil, fmt.Errorf("request failed with status code %d: %s", rsp.StatusCode, string(res.Message))
+			// Return error if response status is KO
+			if res.Status == "KO" {
+				return nil, fmt.Errorf("request failed with status code %d: %s", rsp.StatusCode, string(res.Message))
+			}
 		}
 
 		return responseBody, nil
