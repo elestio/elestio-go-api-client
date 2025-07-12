@@ -572,8 +572,8 @@ func (h *ServiceHandler) EnableFirewallWithRules(serviceId string, rules []Servi
 			targetsJSON += fmt.Sprintf("\"%s\"", target)
 		}
 		targetsJSON += "]"
-		
-		ruleStrings = append(ruleStrings, fmt.Sprintf("{\"type\":\"%s\",\"port\":\"%s\",\"protocol\":\"%s\",\"targets\":%s}", 
+
+		ruleStrings = append(ruleStrings, fmt.Sprintf("{\"type\":\"%s\",\"port\":\"%s\",\"protocol\":\"%s\",\"targets\":%s}",
 			rule.Type, rule.Port, rule.Protocol, targetsJSON))
 	}
 
@@ -853,6 +853,10 @@ func (h *ServiceHandler) GetServiceFirewallRules(service *Service) (*[]ServiceFi
 	var empty []ServiceFirewallRule
 
 	if service.DeploymentStatus != ServiceDeploymentStatusDeployed {
+		return &empty, nil
+	}
+
+	if service.FirewallEnabled == 0 {
 		return &empty, nil
 	}
 

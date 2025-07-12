@@ -571,7 +571,6 @@ func TestServiceHandler_GetServiceFirewallRules(t *testing.T) {
 }
 
 func TestServiceHandler_GetServiceFirewallRules_NotDeployed(t *testing.T) {
-	t.Skip("Skipping test")
 	nonDeployedService := &Service{
 		ID:               "test-service",
 		ProjectID:        "test-project",
@@ -583,6 +582,21 @@ func TestServiceHandler_GetServiceFirewallRules_NotDeployed(t *testing.T) {
 	require.NoError(t, err, "expected no error when getting firewall rules for non-deployed service")
 	require.NotNil(t, rules, "expected non-nil firewall rules")
 	require.Empty(t, *rules, "expected empty firewall rules for non-deployed service")
+}
+
+func TestServiceHandler_GetServiceFirewallRules_FirewallDisabled(t *testing.T) {
+	firewallDisabledService := &Service{
+		ID:               "test-service",
+		ProjectID:        "test-project",
+		DeploymentStatus: ServiceDeploymentStatusDeployed,
+		FirewallEnabled:  NumberAsBool(0), // Firewall disabled
+	}
+
+	c := NewUnsignedClient()
+	rules, err := c.Service.GetServiceFirewallRules(firewallDisabledService)
+	require.NoError(t, err, "expected no error when getting firewall rules for service with disabled firewall")
+	require.NotNil(t, rules, "expected non-nil firewall rules")
+	require.Empty(t, *rules, "expected empty firewall rules when firewall is disabled")
 }
 
 func TestServiceHandler_AddCustomDomain(t *testing.T) {
