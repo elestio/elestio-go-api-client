@@ -3,10 +3,10 @@ package elestio
 import (
 	"fmt"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/slices"
 )
 
 func setupServiceTestCase(t *testing.T) *Client {

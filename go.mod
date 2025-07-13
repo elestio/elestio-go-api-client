@@ -1,11 +1,8 @@
 module github.com/elestio/elestio-go-api-client/v2
 
-go 1.19
+go 1.23.0
 
-require (
-	github.com/stretchr/testify v1.10.0
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
-)
+require github.com/stretchr/testify v1.10.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
