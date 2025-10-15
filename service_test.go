@@ -455,7 +455,7 @@ func TestServiceHandler_EnableFirewallWithRules(t *testing.T) {
 	t.Skip("Skipping test")
 	c := setupServiceTestCase(t)
 
-	serviceID := "66470070"
+	serviceID := "110816110"
 	projectID := "596"
 
 	service, err := c.Service.Get(projectID, serviceID)
@@ -506,6 +506,56 @@ func TestServiceHandler_EnableFirewallWithRules(t *testing.T) {
 	require.NotNil(t, updatedService, "expected non-nil service")
 	require.Equal(t, serviceID, updatedService.ID, "expected service ID to be"+serviceID)
 	require.Equal(t, NumberAsBool(1), updatedService.FirewallEnabled, "expected firewall to be enabled")
+}
+
+func TestServiceHandler_UpdateFirewallRules(t *testing.T) {
+	t.Skip("Skipping test")
+	c := setupServiceTestCase(t)
+
+	serviceID := "110816110"
+	projectID := "596"
+
+	service, err := c.Service.Get(projectID, serviceID)
+	require.NoError(t, err, "expected no error when getting service")
+	require.NotNil(t, service, "expected non-nil service")
+	require.Equal(t, serviceID, service.ID, "expected service ID to be"+serviceID)
+
+	// Use a valid set of rules
+	rules := []ServiceFirewallRule{
+		{
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "22",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+		{
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "4242",
+			Protocol: ServiceFirewallRuleProtocolUDP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+		{
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "80",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+		{
+			Type:     ServiceFirewallRuleTypeInput,
+			Port:     "443",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+		{
+			Type:     ServiceFirewallRuleTypeOutput,
+			Port:     "443",
+			Protocol: ServiceFirewallRuleProtocolTCP,
+			Targets:  []string{"0.0.0.0/0", "::/0"},
+		},
+	}
+
+	err = c.Service.UpdateFirewallRules(serviceID, rules)
+	require.NoError(t, err, "expected no error when updating firewall rules")
 }
 
 func TestServiceHandler_EnableFirewallWithRules_ValidationErrors(t *testing.T) {

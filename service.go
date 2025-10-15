@@ -563,31 +563,43 @@ func (h *ServiceHandler) EnableFirewallWithRules(serviceId string, rules []Servi
 		}
 	}
 
-	var ruleStrings []string
-	for _, rule := range rules {
-		targetsJSON := "["
-		for i, target := range rule.Targets {
-			if i > 0 {
-				targetsJSON += ","
-			}
-			targetsJSON += fmt.Sprintf("\"%s\"", target)
-		}
-		targetsJSON += "]"
-
-		ruleStrings = append(ruleStrings, fmt.Sprintf("{\"type\":\"%s\",\"port\":\"%s\",\"protocol\":\"%s\",\"targets\":%s}",
-			rule.Type, rule.Port, rule.Protocol, targetsJSON))
-	}
-
 	req := struct {
-		JWT       string `json:"jwt"`
-		ServiceID string `json:"vmID"`
-		Action    string `json:"action"`
-		Rules     string `json:"rules"`
+		JWT       string                `json:"jwt"`
+		ServiceID string                `json:"vmID"`
+		Action    string                `json:"action"`
+		Rules     []ServiceFirewallRule `json:"rules"`
 	}{
 		JWT:       h.client.jwt,
 		ServiceID: serviceId,
 		Action:    "enableFirewall",
-		Rules:     fmt.Sprintf("[%s]", strings.Join(ruleStrings, ",")),
+		Rules:     rules,
+	}
+
+	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
+	if err != nil {
+		return err
+	}
+
+	return checkAPIResponse(bts, nil)
+}
+
+func (h *ServiceHandler) UpdateFirewallRules(serviceId string, rules []ServiceFirewallRule) error {
+	for _, rule := range rules {
+		if rule.Type != ServiceFirewallRuleTypeInput && rule.Type != ServiceFirewallRuleTypeOutput {
+			return fmt.Errorf("invalid rule type '%s': only '%s' and '%s' are supported", rule.Type, ServiceFirewallRuleTypeInput, ServiceFirewallRuleTypeOutput)
+		}
+	}
+
+	req := struct {
+		JWT       string                `json:"jwt"`
+		ServiceID string                `json:"vmID"`
+		Action    string                `json:"action"`
+		Rules     []ServiceFirewallRule `json:"rules"`
+	}{
+		JWT:       h.client.jwt,
+		ServiceID: serviceId,
+		Action:    "updateFirewall",
+		Rules:     rules,
 	}
 
 	bts, err := h.client.sendPostRequest(fmt.Sprintf("%s/api/servers/DoActionOnServer", h.client.BaseURL), req)
